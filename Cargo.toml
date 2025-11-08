@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "kdl_config_derive",
+    "kdl_config"
+]
+resolver = "2"
