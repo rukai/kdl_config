@@ -1,3 +1,8 @@
+#![expect(
+    unused_assignments,
+    reason = "no idea why this is triggering, the types are public"
+)]
+
 use miette::{Diagnostic, NamedSource, SourceSpan};
 use thiserror::Error;
 
