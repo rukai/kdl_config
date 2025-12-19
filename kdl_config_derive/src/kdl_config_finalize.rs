@@ -9,10 +9,11 @@ fn get_finalize_type(attrs: &[Attribute]) -> Result<String, syn::Error> {
     for attr in attrs {
         if let Meta::NameValue(name_value) = &attr.meta
             && name_value.path.is_ident("kdl_config_finalize_into")
-                && let Expr::Lit(lit) = &name_value.value
-                    && let Lit::Str(lit) = &lit.lit {
-                        return Ok(lit.value());
-                    }
+            && let Expr::Lit(lit) = &name_value.value
+            && let Lit::Str(lit) = &lit.lit
+        {
+            return Ok(lit.value());
+        }
     }
 
     Err(syn::Error::new(
@@ -23,7 +24,7 @@ fn get_finalize_type(attrs: &[Attribute]) -> Result<String, syn::Error> {
 }
 
 pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
-    let ident = input.ident;
+    let source_type_ident = input.ident;
 
     let finalize_type = get_finalize_type(&input.attrs)?;
     let finalize_type: Expr = syn::parse_str(&finalize_type)?;
@@ -34,7 +35,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                 let rust_field_names: Vec<&syn::Ident> =
                     named.iter().map(|x| x.ident.as_ref().unwrap()).collect();
                 Ok(quote! {
-                    impl KdlConfigFinalize for #ident {
+                    impl KdlConfigFinalize for #source_type_ident {
                         type FinalizeType = #finalize_type;
                         fn finalize(&self) -> Self::FinalizeType {
                             Self::FinalizeType {
@@ -56,13 +57,39 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
             )),
         },
         syn::Data::Enum(DataEnum { variants, .. }) => {
-            let variant_idents: Vec<&Ident> = variants.iter().map(|v| &v.ident).collect();
+            let mut match_lines = vec![];
+            for variant in &variants {
+                let variant_ident = &variant.ident;
+                match_lines.push(match &variant.fields {
+                    syn::Fields::Named(fields_named) => {
+                        let field_names: Vec<_> = fields_named.named
+                            .iter()
+                            .enumerate()
+                            .map(|x| x.1.ident.as_ref().unwrap())
+                            .collect();
+                        quote!(
+                            #source_type_ident::#variant_ident { #( #field_names, )* } => #finalize_type::#variant_ident { #( #field_names: #field_names.value.finalize(), )* }
+                        )
+                    }
+                    syn::Fields::Unnamed(fields_unnamed) => {
+                        let field_names: Vec<_> = fields_unnamed.unnamed
+                            .iter()
+                            .enumerate()
+                            .map(|x| Ident::new(&format!("x{}", x.0), x.1.span()))
+                            .collect();
+                        quote!(
+                            #source_type_ident::#variant_ident ( #( #field_names, )* ) => #finalize_type::#variant_ident ( #( #field_names.value.finalize(), )* )
+                        )
+                    }
+                    syn::Fields::Unit => quote!( #source_type_ident::#variant_ident => #finalize_type::#variant_ident ),
+                });
+            }
             Ok(quote! {
-                impl KdlConfigFinalize for #ident {
+                impl KdlConfigFinalize for #source_type_ident {
                     type FinalizeType = #finalize_type;
                     fn finalize(&self) -> Self::FinalizeType {
                         match self {
-                            #( #ident::#variant_idents => #finalize_type::#variant_idents, )*
+                            #( #match_lines, )*
                         }
                     }
                 }

@@ -14,7 +14,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                     .map(|x| stringcase::kebab_case(&x.to_string()));
                 Ok(quote! {
                     impl KdlConfig for #ident {
-                        // arguments are prefixed with a random guid to ensure they dont collid with user field names.
+                        // arguments are prefixed with a random guid to ensure they dont collide with user field names.
                         // Its silly but I'm not aware of a better solution
                         fn parse_as_node(c068528d5bea4f73bf39204d30e57322_input: NamedSource<String>, c068528d5bea4f73bf39204d30e57322_node: &KdlNode, c068528d5bea4f73bf39204d30e57322_diag: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
                             if let [
