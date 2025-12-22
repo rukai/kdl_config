@@ -2,10 +2,11 @@ use crate::{
     KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic, kdl_value_to_str,
     parse_helpers::get_single_argument_value,
 };
+use arrayvec::ArrayString;
 use kdl::KdlNode;
 use miette::NamedSource;
 
-impl KdlConfig for u32 {
+impl<const CAP: usize> KdlConfig for ArrayString<CAP> {
     fn parse_as_node(
         input: NamedSource<String>,
         node: &KdlNode,
@@ -15,26 +16,26 @@ impl KdlConfig for u32 {
         Self: Sized,
     {
         match get_single_argument_value(input.clone(), node, diagnostics) {
-            Some(kdl::KdlValue::Integer(value)) => {
-                let value = *value;
-                if value >= 0 && value <= u32::MAX as i128 {
+            Some(kdl::KdlValue::String(value)) => {
+                if let Ok(value) = ArrayString::from(value) {
                     Parsed {
-                        value: value as u32,
+                        value,
                         full_span: node.span(),
                         name_span: node.span(),
                         valid: true,
                     }
                 } else {
+                    let len = value.len();
                     diagnostics.push(ParseDiagnostic {
                         input,
                         span: node.span(),
-                        message: Some("Expected type u32 but was out of range".to_owned()),
+                        message: Some(format!("Expected string with less than or equal to {CAP} characters but contained {len} characters. Try reducing the number of characters.")),
                         label: None,
                         help: None,
                         severity: miette::Severity::Error,
                     });
                     Parsed {
-                        value: 0,
+                        value: ArrayString::new(),
                         full_span: node.span(),
                         name_span: node.span(),
                         valid: false,
@@ -46,7 +47,7 @@ impl KdlConfig for u32 {
                     input,
                     span: node.span(),
                     message: Some(format!(
-                        "Expected type Integer but was {}",
+                        "Expected type String but was {}",
                         kdl_value_to_str(value)
                     )),
                     label: None,
@@ -54,14 +55,14 @@ impl KdlConfig for u32 {
                     severity: miette::Severity::Error,
                 });
                 Parsed {
-                    value: 0,
+                    value: ArrayString::new(),
                     full_span: node.span(),
                     name_span: node.span(),
                     valid: false,
                 }
             }
             None => Parsed {
-                value: 0,
+                value: ArrayString::new(),
                 full_span: node.span(),
                 name_span: node.span(),
                 valid: false,
@@ -70,8 +71,8 @@ impl KdlConfig for u32 {
     }
 }
 
-impl KdlConfigFinalize for u32 {
-    type FinalizeType = u32;
+impl<const CAP: usize> KdlConfigFinalize for ArrayString<CAP> {
+    type FinalizeType = ArrayString<CAP>;
     fn finalize(&self) -> Self::FinalizeType {
         *self
     }

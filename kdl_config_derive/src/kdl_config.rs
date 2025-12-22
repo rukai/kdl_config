@@ -99,7 +99,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                     }
                                 }
                             },
-                            Some(name) => {
+                            Some(value) => {
                                 c068528d5bea4f73bf39204d30e57322_diagnostics.push(kdl_config::error::ParseDiagnostic {
                                     input: c068528d5bea4f73bf39204d30e57322_input.clone(),
                                     span: c068528d5bea4f73bf39204d30e57322_node.span(),

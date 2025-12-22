@@ -1,8 +1,9 @@
 use error::{ParseDiagnostic, ParseError};
-use kdl::{KdlDocument, KdlNode};
+use kdl::{KdlDocument, KdlNode, KdlValue};
 use miette::{NamedSource, SourceOffset, SourceSpan};
 
-pub mod arrayvec;
+mod arraystring;
+mod arrayvec;
 pub mod error;
 pub mod integers;
 pub mod parse_helpers;
@@ -71,5 +72,15 @@ impl<T: Default> Default for Parsed<T> {
             name_span: SourceSpan::new(SourceOffset::from_location("", 0, 0), 0),
             valid: Default::default(),
         }
+    }
+}
+
+fn kdl_value_to_str(value: &KdlValue) -> &'static str {
+    match value {
+        KdlValue::String(_) => "String",
+        KdlValue::Integer(_) => "Integer",
+        KdlValue::Float(_) => "Float",
+        KdlValue::Bool(_) => "Bool",
+        KdlValue::Null => "Null",
     }
 }
