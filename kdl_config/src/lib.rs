@@ -5,6 +5,8 @@ use miette::{NamedSource, SourceOffset, SourceSpan};
 mod arraystring;
 mod arrayvec;
 pub mod error;
+#[cfg(feature = "heapless_08")]
+mod heapless;
 pub mod integers;
 pub mod parse_helpers;
 
