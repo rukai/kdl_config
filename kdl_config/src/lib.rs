@@ -66,6 +66,12 @@ impl<T: std::fmt::Debug> std::fmt::Debug for Parsed<T> {
     }
 }
 
+impl<T: PartialEq> PartialEq for Parsed<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value && self.valid == other.valid
+    }
+}
+
 impl<T: Default> Default for Parsed<T> {
     fn default() -> Self {
         Self {

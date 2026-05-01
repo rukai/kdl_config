@@ -77,7 +77,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                         value: #ident::#variant_idents,
                                         full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
                                         name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                        valid: false,
+                                        valid: true,
                                     },
                                 )*
                                 name => {
