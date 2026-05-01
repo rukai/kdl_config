@@ -25,14 +25,11 @@ impl<T: KdlConfig + Default, const CAP: usize> KdlConfig for ArrayVec<Parsed<T>,
                         name_span: node.span(),
                         valid: false,
                     });
-                    diagnostics.push(ParseDiagnostic {
-                        input: input.clone(),
-                        span: node.span(),
-                        message: Some("List items must start with a \"-\"".to_owned()),
-                        label: None,
-                        help: Some(format!("Consider replacing the {name:?} at the start of this section with a \"-\"")),
-                        severity: miette::Severity::Error,
-                    });
+                    diagnostics.push(
+                        ParseDiagnostic::new(input.clone(), node.span())
+                            .message("List items must start with a \"-\"")
+                            .help(format!("Consider replacing the {name:?} at the start of this section with a \"-\"")),
+                    );
                 }
             }
         }

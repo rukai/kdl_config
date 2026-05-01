@@ -81,16 +81,14 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                     },
                                 )*
                                 name => {
-                                    c068528d5bea4f73bf39204d30e57322_diagnostics.push(kdl_config::error::ParseDiagnostic {
-                                        input: c068528d5bea4f73bf39204d30e57322_input.clone(),
-                                        span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                        message: Some(format!(
-                                            "Unknown value {name}"
-                                        )),
-                                        label: None,
-                                        help: Some(format!("Consider replacing it with one of {kdl_names:?}")),
-                                        severity: miette::Severity::Error,
-                                    });
+                                    c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                        kdl_config::error::ParseDiagnostic::new(
+                                            c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                            c068528d5bea4f73bf39204d30e57322_node.span(),
+                                        )
+                                        .message(format!("Unknown value {name}"))
+                                        .help(format!("Consider replacing it with one of {kdl_names:?}")),
+                                    );
                                     Parsed {
                                         value: Default::default(),
                                         full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
@@ -100,16 +98,13 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                 }
                             },
                             Some(value) => {
-                                c068528d5bea4f73bf39204d30e57322_diagnostics.push(kdl_config::error::ParseDiagnostic {
-                                    input: c068528d5bea4f73bf39204d30e57322_input.clone(),
-                                    span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                    message: Some(format!(
-                                        "Expected type string but was {}", "TODO"
-                                    )),
-                                    label: None,
-                                    help: None,
-                                    severity: miette::Severity::Error,
-                                });
+                                c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                    kdl_config::error::ParseDiagnostic::new(
+                                        c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                        c068528d5bea4f73bf39204d30e57322_node.span(),
+                                    )
+                                    .message(format!("Expected type string but was {}", "TODO")),
+                                );
                                 Parsed {
                                     value: Default::default(),
                                     full_span: c068528d5bea4f73bf39204d30e57322_node.span(),

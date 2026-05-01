@@ -25,14 +25,10 @@ impl KdlConfig for u32 {
                         valid: true,
                     }
                 } else {
-                    diagnostics.push(ParseDiagnostic {
-                        input,
-                        span: node.span(),
-                        message: Some("Expected type u32 but was out of range".to_owned()),
-                        label: None,
-                        help: None,
-                        severity: miette::Severity::Error,
-                    });
+                    diagnostics.push(
+                        ParseDiagnostic::new(input, node.span())
+                            .message("Expected type u32 but was out of range"),
+                    );
                     Parsed {
                         value: 0,
                         full_span: node.span(),
@@ -42,17 +38,10 @@ impl KdlConfig for u32 {
                 }
             }
             Some(value) => {
-                diagnostics.push(ParseDiagnostic {
-                    input,
-                    span: node.span(),
-                    message: Some(format!(
-                        "Expected type Integer but was {}",
-                        kdl_value_to_str(value)
-                    )),
-                    label: None,
-                    help: None,
-                    severity: miette::Severity::Error,
-                });
+                diagnostics.push(ParseDiagnostic::new(input, node.span()).message(format!(
+                    "Expected type Integer but was {}",
+                    kdl_value_to_str(value)
+                )));
                 Parsed {
                     value: 0,
                     full_span: node.span(),
