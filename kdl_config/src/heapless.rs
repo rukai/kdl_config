@@ -15,6 +15,25 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
         Self: Sized,
     {
         let mut array = heapless::Vec::new();
+        if !node.entries().is_empty() {
+            diagnostics.push(ParseDiagnostic {
+                input: input.clone(),
+                span: node.span(),
+                message: Some(
+                    "List node has arguments but expected child nodes prefixed with \"-\""
+                        .to_owned(),
+                ),
+                label: None,
+                help: None,
+                severity: miette::Severity::Error,
+            });
+            return Parsed {
+                value: array,
+                full_span: node.span(),
+                name_span: node.span(),
+                valid: false,
+            };
+        }
         if let Some(children) = node.children() {
             for node in children.nodes() {
                 let name = node.name().value();

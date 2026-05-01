@@ -214,6 +214,42 @@ list {
 }
 
 #[test]
+fn arguments_instead_of_children_produces_diagnostic() {
+    let src = "\
+list 1 2 3
+";
+    let (parsed, diagnostics) = parse_doc::<Container>(src);
+    assert_eq!(
+        diagnostics
+            .iter()
+            .map(crate::diag_content)
+            .collect::<Vec<_>>(),
+        vec![crate::DiagContent {
+            message: Some(
+                "List node has arguments but expected child nodes prefixed with \"-\"".to_owned()
+            ),
+            label: None,
+            help: None,
+            severity: miette::Severity::Error,
+        }]
+    );
+    assert_eq!(
+        parsed,
+        Parsed {
+            value: Container {
+                list: Parsed {
+                    value: heapless::Vec::new(),
+                    valid: false,
+                    ..Default::default()
+                },
+            },
+            valid: true,
+            ..Default::default()
+        }
+    );
+}
+
+#[test]
 fn item_wrong_type_produces_diagnostic() {
     let src = "\
 list {
