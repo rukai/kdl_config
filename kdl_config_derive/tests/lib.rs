@@ -1,5 +1,6 @@
 mod enums;
 mod heapless_vec;
+mod kdl_value;
 mod structs;
 
 use kdl_config::error::ParseDiagnostic;
