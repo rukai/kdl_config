@@ -16,17 +16,11 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
     {
         let mut array = heapless::Vec::new();
         if !node.entries().is_empty() {
-            diagnostics.push(ParseDiagnostic {
-                input: input.clone(),
-                span: node.span(),
-                message: Some(
-                    "List node has arguments but expected child nodes prefixed with \"-\""
-                        .to_owned(),
+            diagnostics.push(
+                ParseDiagnostic::new(input.clone(), node.span()).message(
+                    "List node has arguments but expected child nodes prefixed with \"-\"",
                 ),
-                label: None,
-                help: None,
-                severity: miette::Severity::Error,
-            });
+            );
             return Parsed {
                 value: array,
                 full_span: node.span(),
@@ -40,16 +34,11 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
                 if name == "-" {
                     let parsed = KdlConfig::parse_as_node(input.clone(), node, diagnostics);
                     if array.push(parsed).is_err() {
-                        diagnostics.push(ParseDiagnostic {
-                            input: input.clone(),
-                            span: node.span(),
-                            message: Some(format!(
+                        diagnostics.push(ParseDiagnostic::new(input.clone(), node.span()).message(
+                            format!(
                                 "List exceeds maximum capacity of {N} items. Remove excess items."
-                            )),
-                            label: None,
-                            help: None,
-                            severity: miette::Severity::Error,
-                        });
+                            ),
+                        ));
                     }
                 } else {
                     let _ = array.push(Parsed {
@@ -58,16 +47,13 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
                         name_span: node.span(),
                         valid: false,
                     });
-                    diagnostics.push(ParseDiagnostic {
-                        input: input.clone(),
-                        span: node.span(),
-                        message: Some("List items must start with a \"-\"".to_owned()),
-                        label: None,
-                        help: Some(format!(
-                            "Consider replacing the {name:?} at the start of this section with a \"-\""
-                        )),
-                        severity: miette::Severity::Error,
-                    });
+                    diagnostics.push(
+                        ParseDiagnostic::new(input.clone(), node.span())
+                            .message("List items must start with a \"-\"")
+                            .help(format!(
+                                "Consider replacing the {name:?} at the start of this section with a \"-\""
+                            )),
+                    );
                 }
             }
         }
@@ -113,14 +99,11 @@ impl<const N: usize> KdlConfig for heapless::String<N> {
                     },
                     Err(_) => {
                         let len = value.len();
-                        diagnostics.push(ParseDiagnostic {
-                            input,
-                            span: node.span(),
-                            message: Some(format!("Expected string with less than or equal to {N} characters but contained {len} characters. Try reducing the number of characters.")),
-                            label: None,
-                            help: None,
-                            severity: miette::Severity::Error,
-                        });
+                        diagnostics.push(
+                            ParseDiagnostic::new(input, node.span()).message(format!(
+                                "Expected string with less than or equal to {N} characters but contained {len} characters. Try reducing the number of characters."
+                            )),
+                        );
                         Parsed {
                             value: heapless::String::new(),
                             full_span: node.span(),
@@ -131,17 +114,10 @@ impl<const N: usize> KdlConfig for heapless::String<N> {
                 }
             }
             Some(value) => {
-                diagnostics.push(ParseDiagnostic {
-                    input,
-                    span: node.span(),
-                    message: Some(format!(
-                        "Expected type String but was {}",
-                        kdl_value_to_str(value)
-                    )),
-                    label: None,
-                    help: None,
-                    severity: miette::Severity::Error,
-                });
+                diagnostics.push(ParseDiagnostic::new(input, node.span()).message(format!(
+                    "Expected type String but was {}",
+                    kdl_value_to_str(value)
+                )));
                 Parsed {
                     value: heapless::String::new(),
                     full_span: node.span(),

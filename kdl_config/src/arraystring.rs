@@ -26,14 +26,11 @@ impl<const CAP: usize> KdlConfig for ArrayString<CAP> {
                     }
                 } else {
                     let len = value.len();
-                    diagnostics.push(ParseDiagnostic {
-                        input,
-                        span: node.span(),
-                        message: Some(format!("Expected string with less than or equal to {CAP} characters but contained {len} characters. Try reducing the number of characters.")),
-                        label: None,
-                        help: None,
-                        severity: miette::Severity::Error,
-                    });
+                    diagnostics.push(
+                        ParseDiagnostic::new(input, node.span()).message(format!(
+                            "Expected string with less than or equal to {CAP} characters but contained {len} characters. Try reducing the number of characters."
+                        )),
+                    );
                     Parsed {
                         value: ArrayString::new(),
                         full_span: node.span(),
@@ -43,17 +40,10 @@ impl<const CAP: usize> KdlConfig for ArrayString<CAP> {
                 }
             }
             Some(value) => {
-                diagnostics.push(ParseDiagnostic {
-                    input,
-                    span: node.span(),
-                    message: Some(format!(
-                        "Expected type String but was {}",
-                        kdl_value_to_str(value)
-                    )),
-                    label: None,
-                    help: None,
-                    severity: miette::Severity::Error,
-                });
+                diagnostics.push(ParseDiagnostic::new(input, node.span()).message(format!(
+                    "Expected type String but was {}",
+                    kdl_value_to_str(value)
+                )));
                 Parsed {
                     value: ArrayString::new(),
                     full_span: node.span(),

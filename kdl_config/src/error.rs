@@ -41,3 +41,36 @@ pub struct ParseDiagnostic {
     #[diagnostic(severity)]
     pub severity: miette::Severity,
 }
+
+impl ParseDiagnostic {
+    pub fn new(input: NamedSource<String>, span: SourceSpan) -> Self {
+        Self {
+            input,
+            span,
+            message: None,
+            label: None,
+            help: None,
+            severity: miette::Severity::Error,
+        }
+    }
+
+    pub fn message(mut self, message: impl Into<String>) -> Self {
+        self.message = Some(message.into());
+        self
+    }
+
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.label = Some(label.into());
+        self
+    }
+
+    pub fn help(mut self, help: impl Into<String>) -> Self {
+        self.help = Some(help.into());
+        self
+    }
+
+    pub fn severity(mut self, severity: miette::Severity) -> Self {
+        self.severity = severity;
+        self
+    }
+}

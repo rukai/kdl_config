@@ -16,18 +16,15 @@ pub fn get_single_argument_value<'a>(
             // TODO: disallow named values
             .map(|x| x.value().to_string())
             .collect();
-        diagnostics.push(ParseDiagnostic {
-            input: input.clone(),
-            span: node.span(),
-            message: Some(format!(
-                "Node should only contain 1 entry but contained {entry_len:?}"
-            )),
-            label: None,
-            help: Some(format!(
-                "Consider removing the extra entries {extra_entries:?}",
-            )),
-            severity: miette::Severity::Error,
-        });
+        diagnostics.push(
+            ParseDiagnostic::new(input.clone(), node.span())
+                .message(format!(
+                    "Node should only contain 1 entry but contained {entry_len:?}"
+                ))
+                .help(format!(
+                    "Consider removing the extra entries {extra_entries:?}"
+                )),
+        );
     }
     Some(node.entries().first().unwrap().value())
 }
@@ -41,16 +38,11 @@ pub fn get_children<'a, const N: usize>(
     match node.children() {
         Some(children) => get_children_of_document(input, children, names, diagnostics),
         None => {
-            diagnostics.push(ParseDiagnostic {
-                input: input.clone(),
-                span: node.span(),
-                message: Some(format!(
+            diagnostics.push(
+                ParseDiagnostic::new(input.clone(), node.span()).message(format!(
                     "Node has no children but expected children with names {names:?}"
                 )),
-                label: None,
-                help: None,
-                severity: miette::Severity::Error,
-            });
+            );
             [None; N]
         }
     }
@@ -69,32 +61,25 @@ pub fn get_children_of_document<'a, const N: usize>(
             result_children.push(Some(child))
         } else {
             result_children.push(None);
-            diagnostics.push(ParseDiagnostic {
-                input: input.clone(),
-                span: children.span(),
-                message: Some(format!("Child {name} is missing from this node")),
-                label: None,
-                help: None,
-                severity: miette::Severity::Error,
-            });
+            diagnostics.push(
+                ParseDiagnostic::new(input.clone(), children.span())
+                    .message(format!("Child {name} is missing from this node")),
+            );
             missing_fields.push(name);
         }
     }
 
     for child in children.nodes() {
         if !names.contains(&child.name().value()) {
-            diagnostics.push(ParseDiagnostic {
-                input: input.clone(),
-                span: child.span(),
-                message: Some("Unknown node name".to_owned()),
-                label: None,
-                help: Some(if missing_fields.is_empty() {
-                    "This node already has all the children it needs. Consider removing this section.".to_owned()
-                } else {
-                    format!("Consider one of these {names:?} instead?")
-                }),
-                severity: miette::Severity::Error,
-            });
+            diagnostics.push(
+                ParseDiagnostic::new(input.clone(), child.span())
+                    .message("Unknown node name")
+                    .help(if missing_fields.is_empty() {
+                        "This node already has all the children it needs. Consider removing this section.".to_owned()
+                    } else {
+                        format!("Consider one of these {names:?} instead?")
+                    }),
+            );
         }
     }
     result_children.try_into().unwrap()
