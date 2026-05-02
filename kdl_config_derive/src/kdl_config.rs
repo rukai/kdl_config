@@ -19,7 +19,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                         let name = f.ident.as_ref().unwrap();
                         if f.attrs.iter().any(|a| a.path().is_ident("arguments")) {
                             quote! {
-                                #name: kdl_config::KdlConfigFromArguments::parse_as_arguments(
+                                #name: kdl_config::KdlConfig::parse_as_arguments(
                                     c068528d5bea4f73bf39204d30e57322_input.clone(),
                                     #name,
                                     c068528d5bea4f73bf39204d30e57322_diag,

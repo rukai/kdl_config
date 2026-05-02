@@ -1,5 +1,5 @@
 use crate::{
-    KdlConfig, KdlConfigFinalize, KdlConfigFromEntry, Parsed, error::ParseDiagnostic,
+    KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic,
     parse_helpers::get_single_argument_value,
 };
 use kdl::{KdlEntry, KdlNode};
@@ -51,10 +51,7 @@ impl KdlConfig for KdlValue {
             },
         }
     }
-}
-
-impl KdlConfigFromEntry for KdlValue {
-    fn parse_from_entry(
+    fn parse_as_argument(
         input: NamedSource<String>,
         entry: &KdlEntry,
         diagnostics: &mut Vec<ParseDiagnostic>,

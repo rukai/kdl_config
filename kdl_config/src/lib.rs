@@ -30,6 +30,7 @@ pub fn parse<T: KdlConfig>(
 
 /// manually implement for now, derive this later
 pub trait KdlConfig {
+    // TODO: these methods should probably be named parse_from_* instead of parse_as*
     fn parse_as_node(
         source: NamedSource<String>,
         node: &KdlNode,
@@ -37,22 +38,28 @@ pub trait KdlConfig {
     ) -> Parsed<Self>
     where
         Self: Sized;
-}
 
-pub trait KdlConfigFromArguments: Sized {
     fn parse_as_arguments(
-        source: NamedSource<String>,
-        node: &KdlNode,
-        diagnostics: &mut Vec<ParseDiagnostic>,
-    ) -> Parsed<Self>;
-}
+        _source: NamedSource<String>,
+        _node: &KdlNode,
+        _diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>
+    where
+        Self: Sized,
+    {
+        panic!("This type does not support parsing as a list of arguments")
+    }
 
-pub trait KdlConfigFromEntry: Sized {
-    fn parse_from_entry(
-        input: NamedSource<String>,
-        entry: &kdl::KdlEntry,
-        diagnostics: &mut Vec<ParseDiagnostic>,
-    ) -> Parsed<Self>;
+    fn parse_as_argument(
+        _input: NamedSource<String>,
+        _entry: &kdl::KdlEntry,
+        _diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>
+    where
+        Self: Sized,
+    {
+        panic!("This type does not support parsing as an argument")
+    }
 }
 
 /// Convert the KdlConfig structure into a finalized struct.
