@@ -26,7 +26,7 @@ fn parse_doc<T: KdlConfig>(source: &str) -> (Parsed<T>, Vec<ParseDiagnostic>) {
 #[test]
 fn happy_path() {
     let src = "\
-arguments on-press : button-left + button-right -> set-profile 0
+list-of-arguments on-press : button-left + button-right -> set-profile 0
 ";
     let (parsed, diagnostics) = parse_doc::<Container>(src);
     assert_eq!(
@@ -37,12 +37,31 @@ arguments on-press : button-left + button-right -> set-profile 0
         vec![]
     );
 
+    let mut expected_list: heapless::Vec<Parsed<KdlValue>, 10> = heapless::Vec::new();
+    for val in [
+        KdlValue::String("on-press".to_owned()),
+        KdlValue::String(":".to_owned()),
+        KdlValue::String("button-left".to_owned()),
+        KdlValue::String("+".to_owned()),
+        KdlValue::String("button-right".to_owned()),
+        KdlValue::String("->".to_owned()),
+        KdlValue::String("set-profile".to_owned()),
+        KdlValue::Integer(0),
+    ] {
+        expected_list
+            .push(Parsed {
+                value: val,
+                valid: true,
+                ..Default::default()
+            })
+            .unwrap();
+    }
     assert_eq!(
         parsed,
         Parsed {
             value: Container {
                 list_of_arguments: Parsed {
-                    value: heapless::Vec::new(), // TODO: holds "on-press", ":", "button-left" etc.
+                    value: expected_list,
                     valid: true,
                     ..Default::default()
                 }
@@ -51,8 +70,25 @@ arguments on-press : button-left + button-right -> set-profile 0
             ..Default::default()
         }
     );
-    // assert_eq!(
-    //     parsed.value.finalize(),
-    //     todo!()
-    // );
+    assert_eq!(
+        parsed.value.finalize(),
+        ContainerFinal {
+            list_of_arguments: {
+                let mut v = heapless::Vec::new();
+                for val in [
+                    KdlValue::String("on-press".to_owned()),
+                    KdlValue::String(":".to_owned()),
+                    KdlValue::String("button-left".to_owned()),
+                    KdlValue::String("+".to_owned()),
+                    KdlValue::String("button-right".to_owned()),
+                    KdlValue::String("->".to_owned()),
+                    KdlValue::String("set-profile".to_owned()),
+                    KdlValue::Integer(0),
+                ] {
+                    v.push(val).unwrap();
+                }
+                v
+            }
+        }
+    );
 }

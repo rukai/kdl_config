@@ -17,15 +17,40 @@ For example:
 
 ```rust
 #[derive(KdlConfig, Default, Debug)]
-pub struct ProfileParsed {
-    pub activation_combination: Parsed<Vec<Parsed<PhysicalButtonParsed>>>,
-    pub logic: Parsed<BaseLogicParsed>,
-    pub socd: Parsed<SocdTypeParsed>,
+pub enum Letter {
+  A,
+  B,
+  C,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub struct StructuredLetters {
+  pub many_letters: Parsed<Vec<Parsed<Letter>>>,
+  #[arguments]
+  pub many_letters_as_args: Parsed<Vec<Parsed<Letter>>>,
+  pub single_letter: Parsed<Letter>,
+}
+
+#[derive(KdlConfig, Default, Debug)]
+pub struct Config {
+    pub structured_letters: Parsed<StructuredLetters>,
+    pub arbitrary_kdl_value: kdl_config::KdlValue
 }
 
 // Parse the KDL using the upstream kdl crate.
-let input = NamedSource::new("foo.kdl", "...");
-let kdl: KdlDocument = input.inner().parse()?;
+let text = r#"
+structured_letters {
+  many_letters {
+    - A
+    - B
+  }
+  many_letters_as_args B C
+  single_letter B
+}
+arbitrary_value: "this gets parsed as a KdlValue::String"
+"#;
+let input = NamedSource::new("foo.kdl", text);
+let kdl: KdlDocument = text.inner().parse()?;
 
 // parse the KDL document into structs and enums
 let (profile, error): (Parsed<ConfigParsed>, ParseError) = kdl_config::parse(input, kdl);

@@ -39,6 +39,22 @@ pub trait KdlConfig {
         Self: Sized;
 }
 
+pub trait KdlConfigFromArguments: Sized {
+    fn parse_as_arguments(
+        source: NamedSource<String>,
+        node: &KdlNode,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>;
+}
+
+pub trait KdlConfigFromEntry: Sized {
+    fn parse_from_entry(
+        input: NamedSource<String>,
+        entry: &kdl::KdlEntry,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self>;
+}
+
 /// Convert the KdlConfig structure into a finalized struct.
 /// The #[Derive(KdlConfigFinalize)] assumes that the finalize type has the exact same structure with the `Parsed` wrappers removed.
 /// If your final structure differs from this you can manually implement KdlConfigFinalize for your type.

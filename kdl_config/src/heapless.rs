@@ -1,6 +1,6 @@
 use crate::{
-    KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic, kdl_value_to_str,
-    parse_helpers::get_single_argument_value,
+    KdlConfig, KdlConfigFinalize, KdlConfigFromArguments, KdlConfigFromEntry, Parsed,
+    error::ParseDiagnostic, kdl_value_to_str, parse_helpers::get_single_argument_value,
 };
 use kdl::KdlNode;
 use miette::NamedSource;
@@ -55,6 +55,30 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
                             )),
                     );
                 }
+            }
+        }
+        Parsed {
+            value: array,
+            full_span: node.span(),
+            name_span: node.span(),
+            valid: true,
+        }
+    }
+}
+
+impl<T: KdlConfigFromEntry, const N: usize> KdlConfigFromArguments for heapless::Vec<Parsed<T>, N> {
+    fn parse_as_arguments(
+        input: NamedSource<String>,
+        node: &KdlNode,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self> {
+        let mut array = heapless::Vec::new();
+        for entry in node.entries() {
+            let parsed = T::parse_from_entry(input.clone(), entry, diagnostics);
+            if array.push(parsed).is_err() {
+                diagnostics.push(ParseDiagnostic::new(input.clone(), entry.span()).message(
+                    format!("List exceeds maximum capacity of {N} items. Remove excess items."),
+                ));
             }
         }
         Parsed {

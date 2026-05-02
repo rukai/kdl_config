@@ -9,9 +9,33 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
             syn::Fields::Named(FieldsNamed { named, .. }) => {
                 let rust_field_names: Vec<&syn::Ident> =
                     named.iter().map(|x| x.ident.as_ref().unwrap()).collect();
-                let kdl_field_names = rust_field_names
+                let kdl_field_names: Vec<String> = rust_field_names
                     .iter()
-                    .map(|x| stringcase::kebab_case(&x.to_string()));
+                    .map(|x| stringcase::kebab_case(&x.to_string()))
+                    .collect();
+                let field_inits: Vec<proc_macro2::TokenStream> = named
+                    .iter()
+                    .map(|f| {
+                        let name = f.ident.as_ref().unwrap();
+                        if f.attrs.iter().any(|a| a.path().is_ident("arguments")) {
+                            quote! {
+                                #name: kdl_config::KdlConfigFromArguments::parse_as_arguments(
+                                    c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                    #name,
+                                    c068528d5bea4f73bf39204d30e57322_diag,
+                                )
+                            }
+                        } else {
+                            quote! {
+                                #name: KdlConfig::parse_as_node(
+                                    c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                    #name,
+                                    c068528d5bea4f73bf39204d30e57322_diag,
+                                )
+                            }
+                        }
+                    })
+                    .collect();
                 Ok(quote! {
                     impl KdlConfig for #ident {
                         // arguments are prefixed with a random guid to ensure they dont collide with user field names.
@@ -27,7 +51,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                             ) {
                                 return Parsed {
                                     value: #ident {
-                                        #(#rust_field_names: KdlConfig::parse_as_node(c068528d5bea4f73bf39204d30e57322_input.clone(), #rust_field_names, c068528d5bea4f73bf39204d30e57322_diag),)*
+                                        #(#field_inits,)*
                                     },
                                     full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
                                     name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
