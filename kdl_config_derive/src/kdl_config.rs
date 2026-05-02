@@ -144,6 +144,69 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                             }
                         }
                     }
+
+                    fn parse_as_argument(c068528d5bea4f73bf39204d30e57322_input: NamedSource<String>, c068528d5bea4f73bf39204d30e57322_entry: &kdl::KdlEntry, c068528d5bea4f73bf39204d30e57322_diagnostics: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
+                        use kdl::KdlValue;
+                        if c068528d5bea4f73bf39204d30e57322_entry.name().is_some() {
+                            c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                kdl_config::error::ParseDiagnostic::new(
+                                    c068528d5bea4f73bf39204d30e57322_input,
+                                    c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                )
+                                .message("Named properties are not allowed here, only positional arguments"),
+                            );
+                            return Parsed {
+                                value: Default::default(),
+                                full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                valid: false,
+                            };
+                        }
+                        let kdl_names = [#(#kdl_names,)*];
+                        match c068528d5bea4f73bf39204d30e57322_entry.value() {
+                            KdlValue::String(string) => match string.as_str() {
+                                #(
+                                    #kdl_names => Parsed {
+                                        value: #ident::#variant_idents,
+                                        full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        valid: true,
+                                    },
+                                )*
+                                name => {
+                                    c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                        kdl_config::error::ParseDiagnostic::new(
+                                            c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                            c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        )
+                                        .message(format!("Unknown value {name}"))
+                                        .help(format!("Consider replacing it with one of {kdl_names:?}")),
+                                    );
+                                    Parsed {
+                                        value: Default::default(),
+                                        full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        valid: false,
+                                    }
+                                }
+                            },
+                            value => {
+                                c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                    kdl_config::error::ParseDiagnostic::new(
+                                        c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                        c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    )
+                                    .message(format!("Expected type string but was {}", "TODO")),
+                                );
+                                Parsed {
+                                    value: Default::default(),
+                                    full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    valid: false,
+                                }
+                            }
+                        }
+                    }
                 }
             })
         }

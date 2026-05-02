@@ -87,9 +87,8 @@ This then raises the question:
 ## Non-goals
 
 * Serialization
-* Support for arguments/properties
-  * properties will never be supported
-  * leaf level arguments deserializing into a list might happen one day after analysis and discussion
+* Support for properties
+  * IMO, they make the data model too complicated and being unordered makes them awkward to combine with arguments.
 * highest performance
   * The use case is configuration, so the expectation is kdl-config is run very rarely.
   * While the project should be fast within its own design, the design choices taken do limit that somewhat.

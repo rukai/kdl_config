@@ -5,8 +5,27 @@ use kdl_config_derive::{KdlConfig, KdlConfigFinalize};
 use miette::NamedSource;
 
 #[derive(Default, Debug, PartialEq, KdlConfig, KdlConfigFinalize)]
+#[kdl_config_finalize_into = "ColorFinal"]
+enum Color {
+    #[default]
+    Red,
+    Blue,
+    Green,
+}
+
+#[derive(Default, Debug, PartialEq)]
+enum ColorFinal {
+    #[default]
+    Red,
+    Blue,
+    Green,
+}
+
+#[derive(Default, Debug, PartialEq, KdlConfig, KdlConfigFinalize)]
 #[kdl_config_finalize_into = "ContainerFinal"]
 struct Container {
+    #[arguments]
+    heapless_vec_of_color: Parsed<heapless::Vec<Parsed<Color>, 10>>,
     #[arguments]
     heapless_vec_of_values: Parsed<heapless::Vec<Parsed<KdlValue>, 10>>,
     #[arguments]
@@ -21,6 +40,7 @@ struct Container {
 
 #[derive(Default, Debug, PartialEq)]
 struct ContainerFinal {
+    heapless_vec_of_color: heapless::Vec<ColorFinal, 10>,
     heapless_vec_of_values: heapless::Vec<KdlValue, 10>,
     heapless_vec_of_heapless_strings: heapless::Vec<heapless::String<50>, 10>,
     heapless_vec_of_ints: heapless::Vec<u32, 10>,
@@ -38,6 +58,7 @@ fn parse_doc<T: KdlConfig>(source: &str) -> (Parsed<T>, Vec<ParseDiagnostic>) {
 #[test]
 fn happy_path() {
     let src = "\
+heapless-vec-of-color red green
 heapless-vec-of-values on-press : button-left + button-right -> set-profile 0
 heapless-vec-of-heapless-strings hello world
 heapless-vec-of-ints 6 7
@@ -57,6 +78,18 @@ arrayvec-of-arraystring foo bar
         parsed,
         Parsed {
             value: Container {
+                heapless_vec_of_color: Parsed {
+                    value: [Color::Red, Color::Green]
+                        .into_iter()
+                        .map(|val| Parsed {
+                            value: val,
+                            valid: true,
+                            ..Default::default()
+                        })
+                        .collect(),
+                    valid: true,
+                    ..Default::default()
+                },
                 heapless_vec_of_values: Parsed {
                     value: [
                         KdlValue::String("on-press".to_owned()),
@@ -140,6 +173,7 @@ arrayvec-of-arraystring foo bar
     assert_eq!(
         parsed.value.finalize(),
         ContainerFinal {
+            heapless_vec_of_color: [ColorFinal::Red, ColorFinal::Green].into_iter().collect(),
             heapless_vec_of_values: [
                 KdlValue::String("on-press".to_owned()),
                 KdlValue::String(":".to_owned()),
