@@ -2,8 +2,8 @@ use crate::{
     KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic, kdl_value_to_str,
     parse_helpers::get_single_argument_value,
 };
-use kdl::KdlNode;
-use miette::NamedSource;
+use kdl::{KdlEntry, KdlNode};
+use miette::{NamedSource, SourceSpan};
 
 impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<T>, N> {
     fn parse_as_node(
@@ -111,48 +111,77 @@ impl<const N: usize> KdlConfig for heapless::String<N> {
         Self: Sized,
     {
         match get_single_argument_value(input.clone(), node, diagnostics) {
-            Some(kdl::KdlValue::String(value)) => {
-                match heapless::String::try_from(value.as_str()) {
-                    Ok(s) => Parsed {
-                        value: s,
-                        full_span: node.span(),
-                        name_span: node.span(),
-                        valid: true,
-                    },
-                    Err(_) => {
-                        let len = value.len();
-                        diagnostics.push(
-                            ParseDiagnostic::new(input, node.span()).message(format!(
-                                "Expected string with less than or equal to {N} characters but contained {len} characters. Try reducing the number of characters."
-                            )),
-                        );
-                        Parsed {
-                            value: heapless::String::new(),
-                            full_span: node.span(),
-                            name_span: node.span(),
-                            valid: false,
-                        }
-                    }
-                }
-            }
-            Some(value) => {
-                diagnostics.push(ParseDiagnostic::new(input, node.span()).message(format!(
-                    "Expected type String but was {}",
-                    kdl_value_to_str(value)
-                )));
-                Parsed {
-                    value: heapless::String::new(),
-                    full_span: node.span(),
-                    name_span: node.span(),
-                    valid: false,
-                }
-            }
+            Some(value) => parse_heapless_string_value(value, input, node.span(), diagnostics),
             None => Parsed {
                 value: heapless::String::new(),
                 full_span: node.span(),
                 name_span: node.span(),
                 valid: false,
             },
+        }
+    }
+
+    fn parse_as_argument(
+        input: NamedSource<String>,
+        entry: &KdlEntry,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self> {
+        if entry.name().is_some() {
+            diagnostics.push(
+                ParseDiagnostic::new(input, entry.span())
+                    .message("Named properties are not allowed here, only positional arguments"),
+            );
+            return Parsed {
+                value: heapless::String::new(),
+                full_span: entry.span(),
+                name_span: entry.span(),
+                valid: false,
+            };
+        }
+        parse_heapless_string_value(entry.value(), input, entry.span(), diagnostics)
+    }
+}
+
+fn parse_heapless_string_value<const N: usize>(
+    value: &kdl::KdlValue,
+    input: NamedSource<String>,
+    span: SourceSpan,
+    diagnostics: &mut Vec<ParseDiagnostic>,
+) -> Parsed<heapless::String<N>> {
+    match value {
+        kdl::KdlValue::String(value) => match heapless::String::try_from(value.as_str()) {
+            Ok(s) => Parsed {
+                value: s,
+                full_span: span,
+                name_span: span,
+                valid: true,
+            },
+            Err(_) => {
+                let len = value.len();
+                diagnostics.push(
+                    ParseDiagnostic::new(input, span).message(format!(
+                        "Expected string with less than or equal to {N} characters but contained {len} characters. Try reducing the number of characters."
+                    )),
+                );
+                Parsed {
+                    value: heapless::String::new(),
+                    full_span: span,
+                    name_span: span,
+                    valid: false,
+                }
+            }
+        },
+        value => {
+            diagnostics.push(ParseDiagnostic::new(input, span).message(format!(
+                "Expected type String but was {}",
+                kdl_value_to_str(value)
+            )));
+            Parsed {
+                value: heapless::String::new(),
+                full_span: span,
+                name_span: span,
+                valid: false,
+            }
         }
     }
 }

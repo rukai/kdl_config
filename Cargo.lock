@@ -138,6 +138,7 @@ dependencies = [
 name = "kdl_config_derive"
 version = "0.1.0"
 dependencies = [
+ "arrayvec",
  "heapless",
  "kdl",
  "kdl_config",
