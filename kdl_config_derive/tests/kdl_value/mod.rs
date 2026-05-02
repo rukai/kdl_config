@@ -1,6 +1,6 @@
-use kdl::{KdlDocument, KdlNode, KdlValue};
+use kdl::{KdlDocument, KdlNode};
 use kdl_config::error::ParseDiagnostic;
-use kdl_config::{KdlConfig, KdlConfigFinalize, Parsed};
+use kdl_config::{KdlConfig, KdlConfigFinalize, KdlValue, Parsed};
 use kdl_config_derive::{KdlConfig, KdlConfigFinalize};
 use miette::NamedSource;
 
@@ -90,7 +90,7 @@ fn integer_value() {
 
 #[test]
 fn float_value() {
-    let src = "field 3.14\n";
+    let src = "field 3.9\n";
     let (parsed, diagnostics) = parse_doc::<Container>(src);
     assert_eq!(
         diagnostics
@@ -104,7 +104,7 @@ fn float_value() {
         Parsed {
             value: Container {
                 field: Parsed {
-                    value: KdlValue::Float(3.14),
+                    value: KdlValue::Float(3.9),
                     valid: true,
                     ..Default::default()
                 },
@@ -116,14 +116,14 @@ fn float_value() {
     assert_eq!(
         parsed.value.finalize(),
         ContainerFinal {
-            field: KdlValue::Float(3.14),
+            field: KdlValue::Float(3.9),
         }
     );
 }
 
 #[test]
 fn bool_true_value() {
-    let src = "field true\n";
+    let src = "field #true\n";
     let (parsed, diagnostics) = parse_doc::<Container>(src);
     assert_eq!(
         diagnostics
@@ -156,7 +156,7 @@ fn bool_true_value() {
 
 #[test]
 fn bool_false_value() {
-    let src = "field false\n";
+    let src = "field #false\n";
     let (parsed, diagnostics) = parse_doc::<Container>(src);
     assert_eq!(
         diagnostics
@@ -189,7 +189,7 @@ fn bool_false_value() {
 
 #[test]
 fn null_value() {
-    let src = "field null\n";
+    let src = "field #null\n";
     let (parsed, diagnostics) = parse_doc::<Container>(src);
     assert_eq!(
         diagnostics
