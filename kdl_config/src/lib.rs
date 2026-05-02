@@ -1,5 +1,5 @@
 use error::{ParseDiagnostic, ParseError};
-use kdl::{KdlDocument, KdlNode, KdlValue};
+use kdl::{KdlDocument, KdlNode};
 use miette::{NamedSource, SourceOffset, SourceSpan};
 
 mod arraystring;
@@ -8,6 +8,8 @@ pub mod error;
 #[cfg(feature = "heapless_08")]
 mod heapless;
 pub mod integers;
+mod kdl_value;
+pub use kdl_value::KdlValue;
 pub mod parse_helpers;
 
 pub fn parse<T: KdlConfig>(
@@ -83,12 +85,12 @@ impl<T: Default> Default for Parsed<T> {
     }
 }
 
-fn kdl_value_to_str(value: &KdlValue) -> &'static str {
+pub(crate) fn kdl_value_to_str(value: &kdl::KdlValue) -> &'static str {
     match value {
-        KdlValue::String(_) => "String",
-        KdlValue::Integer(_) => "Integer",
-        KdlValue::Float(_) => "Float",
-        KdlValue::Bool(_) => "Bool",
-        KdlValue::Null => "Null",
+        kdl::KdlValue::String(_) => "String",
+        kdl::KdlValue::Integer(_) => "Integer",
+        kdl::KdlValue::Float(_) => "Float",
+        kdl::KdlValue::Bool(_) => "Bool",
+        kdl::KdlValue::Null => "Null",
     }
 }
