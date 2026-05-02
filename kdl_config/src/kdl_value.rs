@@ -2,7 +2,7 @@ use crate::{
     KdlConfig, KdlConfigFinalize, Parsed, error::ParseDiagnostic,
     parse_helpers::get_single_argument_value,
 };
-use kdl::KdlNode;
+use kdl::{KdlEntry, KdlNode};
 use miette::NamedSource;
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -49,6 +49,30 @@ impl KdlConfig for KdlValue {
                 name_span: node.span(),
                 valid: false,
             },
+        }
+    }
+    fn parse_as_argument(
+        input: NamedSource<String>,
+        entry: &KdlEntry,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self> {
+        if entry.name().is_some() {
+            diagnostics.push(
+                crate::error::ParseDiagnostic::new(input, entry.span())
+                    .message("Named properties are not allowed here, only positional arguments"),
+            );
+            return Parsed {
+                value: KdlValue::Null,
+                full_span: entry.span(),
+                name_span: entry.span(),
+                valid: false,
+            };
+        }
+        Parsed {
+            value: KdlValue::from(entry.value()),
+            full_span: entry.span(),
+            name_span: entry.span(),
+            valid: true,
         }
     }
 }

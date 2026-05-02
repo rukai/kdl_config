@@ -1,3 +1,4 @@
+mod arguments;
 mod enums;
 mod heapless_vec;
 mod kdl_value;

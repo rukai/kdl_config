@@ -40,6 +40,28 @@ impl<T: KdlConfig + Default, const CAP: usize> KdlConfig for ArrayVec<Parsed<T>,
             valid: true,
         }
     }
+
+    fn parse_as_arguments(
+        input: NamedSource<String>,
+        node: &KdlNode,
+        diagnostics: &mut Vec<ParseDiagnostic>,
+    ) -> Parsed<Self> {
+        let mut array = ArrayVec::new();
+        for entry in node.entries() {
+            let parsed = T::parse_as_argument(input.clone(), entry, diagnostics);
+            if array.try_push(parsed).is_err() {
+                diagnostics.push(ParseDiagnostic::new(input.clone(), entry.span()).message(
+                    format!("List exceeds maximum capacity of {CAP} items. Remove excess items."),
+                ));
+            }
+        }
+        Parsed {
+            value: array,
+            full_span: node.span(),
+            name_span: node.span(),
+            valid: true,
+        }
+    }
 }
 
 impl<T: KdlConfigFinalize + Default, const CAP: usize> KdlConfigFinalize

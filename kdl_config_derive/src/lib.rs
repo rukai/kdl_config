@@ -12,7 +12,7 @@ pub fn kdl_config_finalize(input: TokenStream) -> TokenStream {
         .into()
 }
 
-#[proc_macro_derive(KdlConfig)]
+#[proc_macro_derive(KdlConfig, attributes(arguments))]
 pub fn kdl_config(input: TokenStream) -> TokenStream {
     let derive_input = parse_macro_input!(input);
     kdl_config::generate(derive_input)

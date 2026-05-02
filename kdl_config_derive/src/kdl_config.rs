@@ -9,9 +9,33 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
             syn::Fields::Named(FieldsNamed { named, .. }) => {
                 let rust_field_names: Vec<&syn::Ident> =
                     named.iter().map(|x| x.ident.as_ref().unwrap()).collect();
-                let kdl_field_names = rust_field_names
+                let kdl_field_names: Vec<String> = rust_field_names
                     .iter()
-                    .map(|x| stringcase::kebab_case(&x.to_string()));
+                    .map(|x| stringcase::kebab_case(&x.to_string()))
+                    .collect();
+                let field_inits: Vec<proc_macro2::TokenStream> = named
+                    .iter()
+                    .map(|f| {
+                        let name = f.ident.as_ref().unwrap();
+                        if f.attrs.iter().any(|a| a.path().is_ident("arguments")) {
+                            quote! {
+                                #name: kdl_config::KdlConfig::parse_as_arguments(
+                                    c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                    #name,
+                                    c068528d5bea4f73bf39204d30e57322_diag,
+                                )
+                            }
+                        } else {
+                            quote! {
+                                #name: KdlConfig::parse_as_node(
+                                    c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                    #name,
+                                    c068528d5bea4f73bf39204d30e57322_diag,
+                                )
+                            }
+                        }
+                    })
+                    .collect();
                 Ok(quote! {
                     impl KdlConfig for #ident {
                         // arguments are prefixed with a random guid to ensure they dont collide with user field names.
@@ -27,7 +51,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                             ) {
                                 return Parsed {
                                     value: #ident {
-                                        #(#rust_field_names: KdlConfig::parse_as_node(c068528d5bea4f73bf39204d30e57322_input.clone(), #rust_field_names, c068528d5bea4f73bf39204d30e57322_diag),)*
+                                        #(#field_inits,)*
                                     },
                                     full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
                                     name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
@@ -117,6 +141,69 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                 full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
                                 name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
                                 valid: false,
+                            }
+                        }
+                    }
+
+                    fn parse_as_argument(c068528d5bea4f73bf39204d30e57322_input: NamedSource<String>, c068528d5bea4f73bf39204d30e57322_entry: &kdl::KdlEntry, c068528d5bea4f73bf39204d30e57322_diagnostics: &mut Vec<kdl_config::error::ParseDiagnostic>) -> Parsed<#ident> {
+                        use kdl::KdlValue;
+                        if c068528d5bea4f73bf39204d30e57322_entry.name().is_some() {
+                            c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                kdl_config::error::ParseDiagnostic::new(
+                                    c068528d5bea4f73bf39204d30e57322_input,
+                                    c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                )
+                                .message("Named properties are not allowed here, only positional arguments"),
+                            );
+                            return Parsed {
+                                value: Default::default(),
+                                full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                valid: false,
+                            };
+                        }
+                        let kdl_names = [#(#kdl_names,)*];
+                        match c068528d5bea4f73bf39204d30e57322_entry.value() {
+                            KdlValue::String(string) => match string.as_str() {
+                                #(
+                                    #kdl_names => Parsed {
+                                        value: #ident::#variant_idents,
+                                        full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        valid: true,
+                                    },
+                                )*
+                                name => {
+                                    c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                        kdl_config::error::ParseDiagnostic::new(
+                                            c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                            c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        )
+                                        .message(format!("Unknown value {name}"))
+                                        .help(format!("Consider replacing it with one of {kdl_names:?}")),
+                                    );
+                                    Parsed {
+                                        value: Default::default(),
+                                        full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                        valid: false,
+                                    }
+                                }
+                            },
+                            value => {
+                                c068528d5bea4f73bf39204d30e57322_diagnostics.push(
+                                    kdl_config::error::ParseDiagnostic::new(
+                                        c068528d5bea4f73bf39204d30e57322_input.clone(),
+                                        c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    )
+                                    .message(format!("Expected type string but was {}", "TODO")),
+                                );
+                                Parsed {
+                                    value: Default::default(),
+                                    full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
+                                    valid: false,
+                                }
                             }
                         }
                     }
