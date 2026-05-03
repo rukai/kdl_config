@@ -19,12 +19,7 @@ impl<T: KdlConfig + Default, const CAP: usize> KdlConfig for ArrayVec<Parsed<T>,
                 if node.name().value() == "-" {
                     array.push(KdlConfig::parse_as_node(input.clone(), node, diagnostics))
                 } else {
-                    array.push(Parsed {
-                        value: Default::default(),
-                        full_span: node.span(),
-                        name_span: node.span(),
-                        valid: false,
-                    });
+                    array.push(Parsed::invalid(node.span()));
                     diagnostics.push(
                         ParseDiagnostic::new(input.clone(), node.span())
                             .message("List items must start with a \"-\"")

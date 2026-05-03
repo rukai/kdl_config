@@ -16,12 +16,7 @@ impl KdlConfig for u32 {
     {
         match get_single_argument_value(input.clone(), node, diagnostics) {
             Some(value) => parse_int_value(value, input, node.span(), diagnostics),
-            None => Parsed {
-                value: 0,
-                full_span: node.span(),
-                name_span: node.span(),
-                valid: false,
-            },
+            None => Parsed::invalid(node.span()),
         }
     }
 
@@ -35,12 +30,7 @@ impl KdlConfig for u32 {
                 crate::error::ParseDiagnostic::new(input, entry.span())
                     .message("Named properties are not allowed here, only positional arguments"),
             );
-            return Parsed {
-                value: 0,
-                full_span: entry.span(),
-                name_span: entry.span(),
-                valid: false,
-            };
+            return Parsed::invalid(entry.span());
         }
         parse_int_value(entry.value(), input, entry.span(), diagnostics)
     }
@@ -67,12 +57,7 @@ fn parse_int_value(
                     ParseDiagnostic::new(input, span)
                         .message("Expected type u32 but was out of range"),
                 );
-                Parsed {
-                    value: 0,
-                    full_span: span,
-                    name_span: span,
-                    valid: false,
-                }
+                Parsed::invalid(span)
             }
         }
         value => {
@@ -80,12 +65,7 @@ fn parse_int_value(
                 "Expected type Integer but was {}",
                 kdl_value_to_str(value)
             )));
-            Parsed {
-                value: 0,
-                full_span: span,
-                name_span: span,
-                valid: false,
-            }
+            Parsed::invalid(span)
         }
     }
 }

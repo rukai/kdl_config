@@ -41,12 +41,7 @@ impl<T: KdlConfig + Default, const N: usize> KdlConfig for heapless::Vec<Parsed<
                         ));
                     }
                 } else {
-                    let _ = array.push(Parsed {
-                        value: Default::default(),
-                        full_span: node.span(),
-                        name_span: node.span(),
-                        valid: false,
-                    });
+                    let _ = array.push(Parsed::invalid(node.span()));
                     diagnostics.push(
                         ParseDiagnostic::new(input.clone(), node.span())
                             .message("List items must start with a \"-\"")
@@ -112,12 +107,7 @@ impl<const N: usize> KdlConfig for heapless::String<N> {
     {
         match get_single_argument_value(input.clone(), node, diagnostics) {
             Some(value) => parse_heapless_string_value(value, input, node.span(), diagnostics),
-            None => Parsed {
-                value: heapless::String::new(),
-                full_span: node.span(),
-                name_span: node.span(),
-                valid: false,
-            },
+            None => Parsed::invalid(node.span()),
         }
     }
 
@@ -131,12 +121,7 @@ impl<const N: usize> KdlConfig for heapless::String<N> {
                 ParseDiagnostic::new(input, entry.span())
                     .message("Named properties are not allowed here, only positional arguments"),
             );
-            return Parsed {
-                value: heapless::String::new(),
-                full_span: entry.span(),
-                name_span: entry.span(),
-                valid: false,
-            };
+            return Parsed::invalid(entry.span());
         }
         parse_heapless_string_value(entry.value(), input, entry.span(), diagnostics)
     }
@@ -163,12 +148,7 @@ fn parse_heapless_string_value<const N: usize>(
                         "Expected string with less than or equal to {N} characters but contained {len} characters. Try reducing the number of characters."
                     )),
                 );
-                Parsed {
-                    value: heapless::String::new(),
-                    full_span: span,
-                    name_span: span,
-                    valid: false,
-                }
+                Parsed::invalid(span)
             }
         },
         value => {
@@ -176,12 +156,7 @@ fn parse_heapless_string_value<const N: usize>(
                 "Expected type String but was {}",
                 kdl_value_to_str(value)
             )));
-            Parsed {
-                value: heapless::String::new(),
-                full_span: span,
-                name_span: span,
-                valid: false,
-            }
+            Parsed::invalid(span)
         }
     }
 }

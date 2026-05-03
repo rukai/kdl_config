@@ -17,12 +17,7 @@ impl<const CAP: usize> KdlConfig for ArrayString<CAP> {
     {
         match get_single_argument_value(input.clone(), node, diagnostics) {
             Some(value) => parse_arraystring_value(value, input, node.span(), diagnostics),
-            None => Parsed {
-                value: ArrayString::new(),
-                full_span: node.span(),
-                name_span: node.span(),
-                valid: false,
-            },
+            None => Parsed::invalid(node.span()),
         }
     }
 
@@ -36,12 +31,7 @@ impl<const CAP: usize> KdlConfig for ArrayString<CAP> {
                 ParseDiagnostic::new(input, entry.span())
                     .message("Named properties are not allowed here, only positional arguments"),
             );
-            return Parsed {
-                value: ArrayString::new(),
-                full_span: entry.span(),
-                name_span: entry.span(),
-                valid: false,
-            };
+            return Parsed::invalid(entry.span());
         }
         parse_arraystring_value(entry.value(), input, entry.span(), diagnostics)
     }
@@ -68,12 +58,7 @@ fn parse_arraystring_value<const CAP: usize>(
                         "Expected string with less than or equal to {CAP} characters but contained {len} characters. Try reducing the number of characters."
                     )),
                 );
-                Parsed {
-                    value: ArrayString::new(),
-                    full_span: span,
-                    name_span: span,
-                    valid: false,
-                }
+                Parsed::invalid(span)
             }
         },
         value => {
@@ -81,12 +66,7 @@ fn parse_arraystring_value<const CAP: usize>(
                 "Expected type String but was {}",
                 kdl_value_to_str(value)
             )));
-            Parsed {
-                value: ArrayString::new(),
-                full_span: span,
-                name_span: span,
-                valid: false,
-            }
+            Parsed::invalid(span)
         }
     }
 }
