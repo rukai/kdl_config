@@ -59,12 +59,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                 }
                             }
                             else {
-                                return Parsed {
-                                    value: Default::default(),
-                                    full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                    name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                    valid: false,
-                                }
+                                return kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_node.span())
                             }
                         }
                     }
@@ -113,12 +108,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                         .message(format!("Unknown value {name}"))
                                         .help(format!("Consider replacing it with one of {kdl_names:?}")),
                                     );
-                                    Parsed {
-                                        value: Default::default(),
-                                        full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                        name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                        valid: false,
-                                    }
+                                    kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_node.span())
                                 }
                             },
                             Some(value) => {
@@ -129,19 +119,9 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                     )
                                     .message(format!("Expected type string but was {}", "TODO")),
                                 );
-                                Parsed {
-                                    value: Default::default(),
-                                    full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                    name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                    valid: false,
-                                }
+                                kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_node.span())
                             }
-                            None => Parsed {
-                                value: Default::default(),
-                                full_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                name_span: c068528d5bea4f73bf39204d30e57322_node.span(),
-                                valid: false,
-                            }
+                            None => kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_node.span())
                         }
                     }
 
@@ -155,12 +135,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                 )
                                 .message("Named properties are not allowed here, only positional arguments"),
                             );
-                            return Parsed {
-                                value: Default::default(),
-                                full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                valid: false,
-                            };
+                            return kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_entry.span());
                         }
                         let kdl_names = [#(#kdl_names,)*];
                         match c068528d5bea4f73bf39204d30e57322_entry.value() {
@@ -182,12 +157,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                         .message(format!("Unknown value {name}"))
                                         .help(format!("Consider replacing it with one of {kdl_names:?}")),
                                     );
-                                    Parsed {
-                                        value: Default::default(),
-                                        full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                        name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                        valid: false,
-                                    }
+                                    kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_entry.span())
                                 }
                             },
                             value => {
@@ -198,12 +168,7 @@ pub fn generate(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
                                     )
                                     .message(format!("Expected type string but was {}", "TODO")),
                                 );
-                                Parsed {
-                                    value: Default::default(),
-                                    full_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                    name_span: c068528d5bea4f73bf39204d30e57322_entry.span(),
-                                    valid: false,
-                                }
+                                kdl_config::Parsed::invalid(c068528d5bea4f73bf39204d30e57322_entry.span())
                             }
                         }
                     }

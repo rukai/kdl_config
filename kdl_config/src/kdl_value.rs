@@ -43,12 +43,7 @@ impl KdlConfig for KdlValue {
                 name_span: node.span(),
                 valid: true,
             },
-            None => Parsed {
-                value: KdlValue::Null,
-                full_span: node.span(),
-                name_span: node.span(),
-                valid: false,
-            },
+            None => Parsed::invalid(node.span()),
         }
     }
     fn parse_as_argument(
@@ -61,12 +56,7 @@ impl KdlConfig for KdlValue {
                 crate::error::ParseDiagnostic::new(input, entry.span())
                     .message("Named properties are not allowed here, only positional arguments"),
             );
-            return Parsed {
-                value: KdlValue::Null,
-                full_span: entry.span(),
-                name_span: entry.span(),
-                valid: false,
-            };
+            return Parsed::invalid(entry.span());
         }
         Parsed {
             value: KdlValue::from(entry.value()),

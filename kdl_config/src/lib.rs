@@ -82,6 +82,17 @@ pub struct Parsed<T> {
     pub valid: bool,
 }
 
+impl<T: Default> Parsed<T> {
+    pub fn invalid(span: SourceSpan) -> Parsed<T> {
+        Parsed {
+            value: Default::default(),
+            full_span: span,
+            name_span: span,
+            valid: false,
+        }
+    }
+}
+
 impl<T: std::fmt::Debug> std::fmt::Debug for Parsed<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Parsed")
